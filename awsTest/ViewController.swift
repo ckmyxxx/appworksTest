@@ -17,7 +17,7 @@ class ViewController: UIViewController {
     let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
     var btnArr: [UIButton] = []
     var layer : AVPlayerLayer?
-    
+    var token : Any?
     @IBOutlet weak var userInputUrl: UITextField!
     @IBOutlet weak var searchBtn: UIButton!
     @IBOutlet weak var videoSlider: UISlider!
@@ -30,8 +30,6 @@ class ViewController: UIViewController {
     @IBOutlet weak var forwardBtn: UIButton!
     @IBOutlet weak var fullScreenBtn: UIButton!
     @IBOutlet weak var noVideoLabel: UILabel!
-    @IBOutlet weak var controlBtnBottomConstraint: NSLayoutConstraint!
-    @IBOutlet weak var sliderBottomConstraint: NSLayoutConstraint!
     
     
     
@@ -46,13 +44,34 @@ class ViewController: UIViewController {
     
         addDismissKeyboardSetting()
         
-        videoSlider.addTarget(self, action: #selector(videoSliderWillSet), for: .touchDown)
 
+        
+        if UIDevice.current.orientation.isLandscape {
+            
+            fullScreenBtn.isSelected = true
+            
+            changeColor()
+
+            self.navigationController?.setNavigationBarHidden(true, animated: true)
+        }
+        
+        videoSlider.addTarget(self, action: #selector(videoSliderWillSet), for: .touchDown)
+        
     }
     
     @objc func videoSliderWillSet(){
         
-        player?.pause()
+        
+    }
+    
+    @IBAction func videoSlidering(_ sender: UISlider) {
+        
+        updateSliderTime(sliderValue: videoSlider.value)
+        
+    }
+    
+    @IBAction func videoTouchUpInside(_ sender: UISlider) {
+        
         
     }
     
@@ -179,17 +198,7 @@ class ViewController: UIViewController {
         return false
     }
     
-    @IBAction func videoSlidering(_ sender: UISlider) {
-        
-        updateSliderTime(sliderValue: videoSlider.value)
-        
-    }
-    
-    @IBAction func videoTouchUpInside(_ sender: UISlider) {
-        
-        player?.play()
-        
-    }
+
     
     
     func updateSliderTime(sliderValue: Float){
@@ -222,6 +231,8 @@ class ViewController: UIViewController {
             
             finishLabel.textColor = #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
             
+            playView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
+            
             for btn in btnArr {
                 
                 btn.tintColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
@@ -233,6 +244,8 @@ class ViewController: UIViewController {
             currentLabel.textColor = #colorLiteral(red: 0.6666666865, green: 0.6666666865, blue: 0.6666666865, alpha: 1)
             
             finishLabel.textColor = #colorLiteral(red: 0.6666666865, green: 0.6666666865, blue: 0.6666666865, alpha: 1)
+            
+            playView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
             
             for btn in btnArr {
                 
@@ -246,15 +259,15 @@ class ViewController: UIViewController {
     
     func addPlayerObserver(){
         
-        player?.addPeriodicTimeObserver(forInterval: CMTimeMake(value: 1, timescale: 1), queue: DispatchQueue.main, using: { (CMTime) in
+        token = player?.addPeriodicTimeObserver(forInterval: CMTimeMake(value: 1, timescale: 1), queue: DispatchQueue.main, using: { [weak self](CMTime) in
             
-            if self.player?.currentItem?.status == .readyToPlay {
+            if self?.player?.currentItem?.status == .readyToPlay {
                 
-                let currentTime = CMTimeGetSeconds((self.player?.currentTime())!)
+                let currentTime = CMTimeGetSeconds((self?.player?.currentTime())!)
                 
-                self.videoSlider.value = Float(currentTime)
+                self?.videoSlider.value = Float(currentTime)
                 
-                self.currentLabel.text = self.formatConversion(time: currentTime)
+                self?.currentLabel.text = self?.formatConversion(time: currentTime)
                 
             }
             
@@ -273,7 +286,7 @@ class ViewController: UIViewController {
        
         videoSlider.maximumValue = Float(seconds)
        
-        videoSlider.isContinuous = true
+        videoSlider.isContinuous = false
             
         }
     }
@@ -281,12 +294,8 @@ class ViewController: UIViewController {
     override func willTransition(to newCollection: UITraitCollection, with coordinator: UIViewControllerTransitionCoordinator) {
         
         if (UIDevice.current.orientation.isLandscape) {
-            
-            changeOrientationSetting(isLandscape: true)
-            
-            playView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
-            
-            setConstraint(sliderConstraint: 10, BtnConstraint: 10)
+
+            fullScreenBtn.isSelected = true
             
             self.navigationController?.setNavigationBarHidden(true, animated: true)
             
@@ -302,13 +311,9 @@ class ViewController: UIViewController {
             
         } else {
             
-            changeOrientationSetting(isLandscape: false)
-            
-            playView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
+            fullScreenBtn.isSelected = false
             
             self.navigationController?.setNavigationBarHidden(false, animated: true)
-            
-            setConstraint(sliderConstraint: 30, BtnConstraint: 30)
             
              DispatchQueue.main.async {
                 
@@ -325,32 +330,7 @@ class ViewController: UIViewController {
         
         changeColor()
         
-        
     }
-    
-    func changeOrientationSetting(isLandscape: Bool){
-        
-        userInputUrl.isHidden = isLandscape
-        
-        searchBtn.isHidden = isLandscape
-        
-        fullScreenBtn.isSelected = isLandscape
-    }
-    
-    
-    func setConstraint(sliderConstraint: Int, BtnConstraint: Int) {
-        
-        sliderBottomConstraint.constant = CGFloat(sliderConstraint)
-        
-        controlBtnBottomConstraint.constant = CGFloat(BtnConstraint)
-        
-    }
-    
-    
-  
-    
-
-
 
 }
 
