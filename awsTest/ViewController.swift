@@ -47,6 +47,8 @@ class ViewController: UIViewController {
             
             fullScreenBtn.isSelected = true
             
+            self.navigationController?.setNavigationBarHidden(true, animated: true)
+            
             changeColor()
 
         }
