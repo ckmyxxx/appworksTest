@@ -9,13 +9,14 @@
 import UIKit
 import AVFoundation
 
-class ViewController: UIViewController, UITextFieldDelegate {
+class ViewController: UIViewController {
     
-    var player : AVPlayer?
     override var supportedInterfaceOrientations: UIInterfaceOrientationMask { return .portrait }
-    let myAlert = UIAlertController(title: "錯誤", message: "請輸入正確網址", preferredStyle: .alert)
-    let myAction = UIAlertAction(title: "OK", style: .default, handler: nil)
-
+    var player : AVPlayer?
+    let wrongUrlAlert = UIAlertController(title: "錯誤", message: "請輸入正確網址", preferredStyle: .alert)
+    let okAction = UIAlertAction(title: "OK", style: .default, handler: nil)
+    var btnArr: [UIButton] = []
+    var layer : AVPlayerLayer?
     
     @IBOutlet weak var userInputUrl: UITextField!
     @IBOutlet weak var searchBtn: UIButton!
@@ -23,32 +24,52 @@ class ViewController: UIViewController, UITextFieldDelegate {
     @IBOutlet weak var currentLabel: UILabel!
     @IBOutlet weak var finishLabel: UILabel!
     @IBOutlet weak var playView: UIView!
-    
     @IBOutlet weak var volumeBtn: UIButton!
     @IBOutlet weak var backwardBtn: UIButton!
     @IBOutlet weak var playBtn: UIButton!
     @IBOutlet weak var forwardBtn: UIButton!
     @IBOutlet weak var fullScreenBtn: UIButton!
     @IBOutlet weak var noVideoLabel: UILabel!
-    
-    var btnArr: [UIButton] = []
-    var userUrl: String?
-    var isPlaying = false
-    var layer : AVPlayerLayer?
-    
     @IBOutlet weak var controlBtnBottomConstraint: NSLayoutConstraint!
     @IBOutlet weak var sliderBottomConstraint: NSLayoutConstraint!
     
-    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-        userInputUrl.becomeFirstResponder()
-        return true
+    
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        btnArr = [volumeBtn, backwardBtn, playBtn, forwardBtn, fullScreenBtn]
+        
+        wrongUrlAlert.addAction(okAction)
+        
+        searchBtnSetting()
+    
+        addDismissKeyboardSetting()
+        
+        videoSlider.addTarget(self, action: #selector(videoSliderWillSet), for: .touchDown)
+
+    }
+    
+    @objc func videoSliderWillSet(){
+        
+        player?.pause()
+        
     }
     
     
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        userInputUrl.resignFirstResponder()
-        return true
+    func addDismissKeyboardSetting(){
+        
+        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        
+        self.view.addGestureRecognizer(tap)
     }
+    
+    @objc func dismissKeyboard() {
+        
+        self.view.endEditing(true)
+    }
+    
+
     
     @IBAction func volumeBtnPressed(_ sender: UIButton) {
         
@@ -70,10 +91,8 @@ class ViewController: UIViewController, UITextFieldDelegate {
     @IBAction func playBtnPressed(_ sender: UIButton) {
         
         playBtn.isSelected = !playBtn.isSelected
-        
-        isPlaying = !isPlaying
 
-        if isPlaying {
+        if playBtn.isSelected {
             
             player?.play()
             
@@ -94,9 +113,6 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
         fullScreenBtn.isSelected = !fullScreenBtn.isSelected
     
-        changeColor()
-        
-        UIView.setAnimationsEnabled(false)
         
         if UIDevice.current.orientation.isPortrait {
             
@@ -107,13 +123,13 @@ class ViewController: UIViewController, UITextFieldDelegate {
             UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
         }
 
-        UIView.setAnimationsEnabled(true)
+        changeColor()
         
     }
     
     @IBAction func searchBtnPressed(_ sender: UIButton) {
         
-        userUrl = userInputUrl?.text
+        let userUrl = userInputUrl?.text
         
         if verifyUrl(urlString: userUrl) {
             
@@ -136,24 +152,19 @@ class ViewController: UIViewController, UITextFieldDelegate {
                 addPlayerObserver()
                 
                 userInputUrl.resignFirstResponder()
+                
+                playBtn.isSelected = true
+                
+                player?.play()
             }
         } else {
 
-            present(myAlert, animated: true, completion: nil)
+            present(wrongUrlAlert, animated: true, completion: nil)
         }
 
     }
     
 
-    
-        
-
-            
-           
-            
-        
-
-  
     
     func verifyUrl (urlString: String?) -> Bool {
         //Check for nil
@@ -174,6 +185,13 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
     }
     
+    @IBAction func videoTouchUpInside(_ sender: UISlider) {
+        
+        player?.play()
+        
+    }
+    
+    
     func updateSliderTime(sliderValue: Float){
         
         let seconds = Int64(sliderValue)
@@ -184,26 +202,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
         currentLabel.text = formatConversion(time: Float64(seconds))
     }
-    
-    
 
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        btnArr = [volumeBtn, backwardBtn, playBtn, forwardBtn, fullScreenBtn]
-        
-        searchBtnSetting()
-        
-        myAlert.addAction(myAction)
-        
-        let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
-        self.view.addGestureRecognizer(tap)
-    }
-    
-    @objc func dismissKeyboard() {
-        self.view.endEditing(true)
-    }
     
     func searchBtnSetting(){
         
@@ -275,6 +274,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         videoSlider.maximumValue = Float(seconds)
        
         videoSlider.isContinuous = true
+            
         }
     }
     
@@ -282,7 +282,9 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
         if (UIDevice.current.orientation.isLandscape) {
             
-            fullScreenBtn.isSelected = true
+            changeOrientationSetting(isLandscape: true)
+            
+            playView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
             
             setConstraint(sliderConstraint: 10, BtnConstraint: 10)
             
@@ -300,11 +302,11 @@ class ViewController: UIViewController, UITextFieldDelegate {
             
         } else {
             
-            fullScreenBtn.isSelected = false
+            changeOrientationSetting(isLandscape: false)
+            
+            playView.backgroundColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 0)
             
             self.navigationController?.setNavigationBarHidden(false, animated: true)
-            
-            
             
             setConstraint(sliderConstraint: 30, BtnConstraint: 30)
             
@@ -326,9 +328,17 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
     }
     
+    func changeOrientationSetting(isLandscape: Bool){
+        
+        userInputUrl.isHidden = isLandscape
+        
+        searchBtn.isHidden = isLandscape
+        
+        fullScreenBtn.isSelected = isLandscape
+    }
+    
     
     func setConstraint(sliderConstraint: Int, BtnConstraint: Int) {
-        
         
         sliderBottomConstraint.constant = CGFloat(sliderConstraint)
         
@@ -336,6 +346,15 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
     }
     
+    
+  
+    
+
+
+
+}
+
+extension ViewController {
     
     func formatConversion(time:Float64) -> String {
         
@@ -368,9 +387,4 @@ class ViewController: UIViewController, UITextFieldDelegate {
         
         return time
     }
-    
-
-
-
 }
-
