@@ -125,7 +125,6 @@
                                 <color key="tintColor" red="0.24705882352941178" green="0.31764705882352939" blue="0.70980392156862748" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <connections>
                                     <action selector="videoSlidering:" destination="BYZ-38-t0r" eventType="valueChanged" id="Ayg-zW-xCX"/>
-                                    <action selector="videoTouchUpInside:" destination="BYZ-38-t0r" eventType="touchUpInside" id="vkN-Tr-TBo"/>
                                 </connections>
                             </slider>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="00:00" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="FNV-9V-htf">

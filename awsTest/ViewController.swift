@@ -31,9 +31,8 @@ class ViewController: UIViewController {
     @IBOutlet weak var fullScreenBtn: UIButton!
     @IBOutlet weak var noVideoLabel: UILabel!
     
-    
-    
     override func viewDidLoad() {
+        
         super.viewDidLoad()
         
         btnArr = [volumeBtn, backwardBtn, playBtn, forwardBtn, fullScreenBtn]
@@ -43,24 +42,14 @@ class ViewController: UIViewController {
         searchBtnSetting()
     
         addDismissKeyboardSetting()
-        
-
-        
+  
         if UIDevice.current.orientation.isLandscape {
             
             fullScreenBtn.isSelected = true
             
             changeColor()
 
-            self.navigationController?.setNavigationBarHidden(true, animated: true)
         }
-        
-        videoSlider.addTarget(self, action: #selector(videoSliderWillSet), for: .touchDown)
-        
-    }
-    
-    @objc func videoSliderWillSet(){
-        
         
     }
     
@@ -70,25 +59,19 @@ class ViewController: UIViewController {
         
     }
     
-    @IBAction func videoTouchUpInside(_ sender: UISlider) {
-        
-        
-    }
-    
-    
     func addDismissKeyboardSetting(){
         
         let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         
         self.view.addGestureRecognizer(tap)
+        
     }
     
     @objc func dismissKeyboard() {
         
         self.view.endEditing(true)
+        
     }
-    
-
     
     @IBAction func volumeBtnPressed(_ sender: UIButton) {
         
@@ -100,6 +83,7 @@ class ViewController: UIViewController {
             
         }
     }
+    
     @IBAction func backwardBtnPressed(_ sender: UIButton) {
         
         backwardBtn.isSelected = !backwardBtn.isSelected
@@ -107,6 +91,7 @@ class ViewController: UIViewController {
         updateSliderTime(sliderValue: videoSlider.value - 10)
         
     }
+    
     @IBAction func playBtnPressed(_ sender: UIButton) {
         
         playBtn.isSelected = !playBtn.isSelected
@@ -127,12 +112,13 @@ class ViewController: UIViewController {
         forwardBtn.isSelected = !forwardBtn.isSelected
         
         updateSliderTime(sliderValue: videoSlider.value + 10)
+        
     }
+    
     @IBAction func fullScreenBtnPressed(_ sender: UIButton) {
         
         fullScreenBtn.isSelected = !fullScreenBtn.isSelected
     
-        
         if UIDevice.current.orientation.isPortrait {
             
             UIDevice.current.setValue(UIInterfaceOrientation.landscapeRight.rawValue, forKey: "orientation")
@@ -176,6 +162,7 @@ class ViewController: UIViewController {
                 
                 player?.play()
             }
+            
         } else {
 
             present(wrongUrlAlert, animated: true, completion: nil)
@@ -183,23 +170,18 @@ class ViewController: UIViewController {
 
     }
     
-
-    
     func verifyUrl (urlString: String?) -> Bool {
-        //Check for nil
+        
         if let urlString = urlString {
-            // create NSURL instance
+            
             if let url = NSURL(string: urlString) {
-                // check if your application can open the NSURL instance
+                
                 return UIApplication.shared.canOpenURL(url as URL)
             }
         }
         
         return false
     }
-    
-
-    
     
     func updateSliderTime(sliderValue: Float){
         
@@ -221,7 +203,6 @@ class ViewController: UIViewController {
         
         searchBtn.layer.borderWidth = 1
     }
-    
     
     func changeColor() {
         
@@ -286,7 +267,7 @@ class ViewController: UIViewController {
        
         videoSlider.maximumValue = Float(seconds)
        
-        videoSlider.isContinuous = false
+        videoSlider.isContinuous = true
             
         }
     }
